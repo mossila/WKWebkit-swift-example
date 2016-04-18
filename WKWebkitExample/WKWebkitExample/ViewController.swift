@@ -13,6 +13,7 @@ class ViewController: UIViewController,WKNavigationDelegate {
     var defaultWebsite: Int! //Automatic unwrap optional, willset before segue
     var websites: [String]!
     var webView: WKWebView!
+    var uiWebView: UIWebView!
     var progressView:  UIProgressView!
     override func loadView() {
         setupWebView()
@@ -53,27 +54,10 @@ class ViewController: UIViewController,WKNavigationDelegate {
         webView = WKWebView()
         webView.navigationDelegate = self
         view = webView
-        progressView = UIProgressView(progressViewStyle: .Default)
-        progressView.sizeToFit()
-        let frame = view.frame
-        progressView.frame = CGRect(x: 0, y: 0, width: frame.width, height: 2)
-        view.addSubview(progressView)
         
         
     }
-    func setupProgressbar() {
-        let navBar = self.navigationController?.navigationBar
-        let navBarHeight = navBar?.frame.height
-        let progressFrame = progressView.frame
-        let pSetX = progressFrame.origin.x
-        let pSetY = CGFloat(navBarHeight!)
-        let pSetWidth = self.view.frame.width
-        let pSetHight = progressFrame.height
-        
-        progressView.frame = CGRectMake(pSetX, pSetY, pSetWidth, pSetHight)
-        self.navigationController?.navigationBar.addSubview(progressView)
-        progressView.translatesAutoresizingMaskIntoConstraints = false
-    }
+    
 
     func loadDefaultWebView() {
         let url = NSURL(string: "https://\(websites[defaultWebsite])")!
@@ -84,6 +68,18 @@ class ViewController: UIViewController,WKNavigationDelegate {
     // MARK: - WKNavigationDelegate
     func webView(webView: WKWebView, didFinishNavigation navigation: WKNavigation!) {
         title = webView.title
+    }
+    func webView(webView: WKWebView, decidePolicyForNavigationAction navigationAction: WKNavigationAction, decisionHandler: (WKNavigationActionPolicy) -> Void) {
+        let url = navigationAction.request.URL
+        if let host = url!.host {
+            for website in websites {
+                if host.rangeOfString(website)  != nil{
+                    decisionHandler(.Allow)
+                    return
+                }
+            }
+        }
+        decisionHandler(.Cancel)
     }
     // MARK: - Navigation bar
     func setupToolbar() {
@@ -107,7 +103,30 @@ class ViewController: UIViewController,WKNavigationDelegate {
         //rightBarButtonItem with `s`, need to reverse to currect order
         navigationItem.rightBarButtonItems = [back, forward].reverse()
     }
+    func setupProgressbar() {
+//        let navBar = self.navigationController?.navigationBar
+//        let navBarHeight = navBar?.frame.height
+//        let progressFrame = progressView.frame
+//        let pSetX = progressFrame.origin.x
+//        let pSetY = CGFloat(navBarHeight!)
+//        let pSetWidth = self.view.frame.width
+//        let pSetHight = progressFrame.height
+//        
+//        progressView.frame = CGRectMake(pSetX, pSetY, pSetWidth, pSetHight)
+//        self.navigationController?.navigationBar.addSubview(progressView)
+//        progressView.translatesAutoresizingMaskIntoConstraints = false
+        
+//        progressView = UIProgressView(progressViewStyle: .Default)
+//        progressView.sizeToFit()
+//        let frame = view.frame
+//        progressView.frame = CGRect(x: 0, y: 0, width: frame.width, height: 2)
+//        view.addSubview(progressView)
 
+        progressView = UIProgressView(progressViewStyle: .Default)
+        progressView.sizeToFit()
+        let progressButton = UIBarButtonItem(customView: progressView)
+        toolbarItems?.insert(progressButton, atIndex: 0)
+    }
     // MARK: - KVO
     func setupKVO() {
         webView.addObserver(self, forKeyPath: "estimatedProgress", options: .New, context: nil)

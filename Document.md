@@ -193,4 +193,22 @@
     	...
     	navigationController?.hidesBarsOnSwipe = false
 	}
-```
+ ```
+ 
+20. Controll policy by not allow user to go out the list of available websites.
+
+ ```swift
+ 		// MARK :- WKNavigationDelegate
+     func webView(webView: WKWebView, decidePolicyForNavigationAction navigationAction: WKNavigationAction, decisionHandler: (WKNavigationActionPolicy) -> Void) {
+        let url = navigationAction.request.URL
+        if let host = url!.host {
+            for website in websites {
+                if host.rangeOfString(website)  != nil{
+                    decisionHandler(.Allow)
+                    return
+                }
+            }
+        }
+        decisionHandler(.Cancel)
+    }
+ ```
